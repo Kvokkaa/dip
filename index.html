@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> підбір засобів ТЗІ</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-top">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-text">КСЗІ v3.0</div>
+    </div>
+    <div class="hdiv"></div>
+    <span style="font-size:11px;color:var(--tm);font-family:'JetBrains Mono',monospace;">Підтримка проектних рішень</span>
+    <div class="hdr-spacer"></div>
+    <div class="themes">
+      <button class="tbtn on" title="dark"   onclick="setTheme('dark')"  >🌑</button>
+      <button class="tbtn"    title="light"  onclick="setTheme('light')" >☀️</button>
+      <button class="tbtn"    title="spruce" onclick="setTheme('spruce')">🌲</button>
+      <button class="tbtn"    title="violet" onclick="setTheme('violet')">💜</button>
+    </div>
+  </div>
+  <div class="hdr-bot">
+    <nav class="nav" id="nav">
+      <button class="ntab on" onclick="goTab(0,this)">📐 Схема приміщення</button>
+      <button class="ntab"    onclick="goTab(3,this)">📦 База компонентів</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ══ TAB 1 ══ -->
+<div class="page on" id="p0">
+  <div class="t1wrap">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="card">
+        <div class="ctitle">🛠️ Інструменти та елементи</div>
+        <p style="font-size:10px;color:var(--tm);margin-bottom:8px;line-height:1.4;">
+          <b style="color:var(--t2)">Стіна/Ластик</b> — малювання на полотні &nbsp;·&nbsp;
+          <b style="color:var(--t2)">Елементи</b> — вибери → вставити на схемі
+        </p>
+
+        <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Малювання</div>
+        <div class="tgrid" style="margin-bottom:10px;">
+          <div class="titem on" id="tool-wall"  onclick="setTool('wall')" >
+            <span class="titem-ic">🧱</span>Стіна
+          </div>
+          <div class="titem"   id="tool-erase" onclick="setTool('erase')">
+            <span class="titem-ic">🧹</span>Ластик
+          </div>
+        </div>
+
+        <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Елементи приміщення</div>
+        <div class="tgrid" style="margin-bottom:4px;">
+          <div class="titem" id="el-window" onclick="selectEl('window')"><span class="titem-ic">🪟</span>Вікно</div>
+          <div class="titem" id="el-door"   onclick="selectEl('door')"  ><span class="titem-ic">🚪</span>Двері</div>
+          <div class="titem" id="el-pipe"   onclick="selectEl('pipe')"  ><span class="titem-ic">🔧</span>Труба</div>
+          <div class="titem" id="el-vent"   onclick="selectEl('vent')"  ><span class="titem-ic">💨</span>Вентиляція</div>
+        </div>
+
+        <div id="elHint" style="display:none;margin-top:8px;padding:6px 10px;background:var(--acg);border:1px solid var(--ac);border-radius:7px;font-size:11px;color:var(--ac);text-align:center;">
+          ✅ Обрано: <b id="elHintName"></b> — натиснути на схемі · <span style="opacity:.7">Esc щоб скасувати</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">🔊 Джерела звуку</div>
+        <p style="font-size:11px;color:var(--tm);margin-bottom:8px;">Постав де знаходиться джерело — алгоритм врахує відстані до стін</p>
+        <div class="tgrid">
+          <div class="titem" id="el-src-person" onclick="selectEl('src-person')">
+            <span class="titem-ic">🧍‍♂️</span>Людина
+          </div>
+          <div class="titem" id="el-src-pc" onclick="selectEl('src-pc')">
+            <span class="titem-ic">💻</span>Обладнання
+          </div>
+          <div class="titem" id="el-src-multi" onclick="selectEl('src-multi')">
+            <span class="titem-ic">🔊</span>Комбіноване
+          </div>
+          <div class="titem" id="el-src-table" onclick="selectEl('src-table')">
+            <span class="titem-ic">🪑</span>Стіл/зона
+          </div>
+        </div>
+        <div id="srcInfo" style="display:none;margin-top:8px;padding:8px 10px;background:rgba(255,90,90,.08);border:1px solid var(--er);border-radius:7px;font-size:11px;color:var(--er);">
+          ⚠️ Без джерела звуку розрахунок буде рівномірним
+        </div>
+        <div id="srcHint" style="display:none;margin-top:8px;padding:6px 10px;background:var(--acg);border:1px solid var(--ac);border-radius:7px;font-size:11px;color:var(--ac);text-align:center;">
+          ✅ Обрано: <b id="srcHintName"></b> — натиснути на схемі · <span style="opacity:.7">Esc щоб скасувати</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">🧱 Параметри стін</div>
+        <div class="fgroup">
+          <label class="flabel">Матеріал</label>
+          <select class="fsel" id="wMat">
+            <option value="brick">Цегла (52 дБ)</option>
+            <option value="concrete">Залізобетон (57 дБ)</option>
+            <option value="drywall">Гіпсокартон (43 дБ)</option>
+            <option value="aerated">Газобетон (44 дБ)</option>
+            <option value="panel">Панель (46 дБ)</option>
+            <option value="wood">Дерево (38 дБ)</option>
+          </select>
+        </div>
+        <div class="irow">
+          <div class="fgroup">
+            <label class="flabel">Товщина (см)</label>
+            <input class="finput" type="number" id="wThick" value="25" min="5" max="120"/>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Тип стіни</label>
+            <select class="fsel" id="wType">
+              <option value="load">Несуча</option>
+              <option value="part">Перегородка</option>
+            </select>
+          </div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0">
+          <label class="flabel">Висота приміщення (м)</label>
+          <input class="finput" type="number" id="roomH" value="3" min="2" max="6" step="0.1"/>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle">🎯 Категорія об'єкта (ТПКО-95)</div>
+        <label class="ritem"><input type="radio" name="cls" value="1"/><div><div class="ritem-title">I — особливої важливості</div><div class="ritem-sub">W ≤ 10% розбірливості</div></div></label>
+        <label class="ritem"><input type="radio" name="cls" value="2"/><div><div class="ritem-title">II — цілком таємно</div><div class="ritem-sub">W ≤ 20% розбірливості</div></div></label>
+        <label class="ritem"><input type="radio" name="cls" value="3" checked/><div><div class="ritem-title">III — таємно / інша таємниця</div><div class="ritem-sub">W ≤ 30% розбірливості</div></div></label>
+        <label class="ritem"><input type="radio" name="cls" value="4"/><div><div class="ritem-title">IV — ІзОД (не держтаємниця)</div><div class="ritem-sub">W ≤ 40% розбірливості</div></div></label>
+      </div>
+
+      <div class="btns-col">
+        <button class="btn btn-se btn-full" onclick="saveSchema()">💾 Зберегти схему</button>
+        <button class="btn btn-se btn-full" onclick="loadSchemaUI()">📂 Завантажити з файлу</button>
+        <button class="btn btn-se btn-full" style="font-size:12px;opacity:.85" onclick="loadSavedSchema()">🕘 Завантажити збережену</button>
+        <input type="file" id="schemaFile" accept=".json,application/json" style="display:none" onchange="loadSchemaFromFile(event)"/>
+        <button class="btn btn-pr btn-full btn-lg" onclick="generate()">⚡ Згенерувати конфігурацію</button>
+      </div>
+    </aside>
+
+    <!-- CANVAS -->
+    <div>
+      <div class="carea">
+        <div class="ctbar">
+          <button class="ctbtn on" id="cb-draw" onclick="setDrawMode(this,'wall')">✏️ Малювати</button>
+          <button class="ctbtn"    onclick="undoLast()">↩️ Скасувати</button>
+          <button class="ctbtn"    onclick="clearAll()">🗑️ Очистити</button>
+          <div style="width:1px;height:20px;background:var(--b)"></div>
+          <span style="font-size:11px;color:var(--tm)">1кл&nbsp;=&nbsp;1м</span>
+          <div class="cinfo">
+            <span class="ccoord" id="coord">x:0 y:0</span>
+            <span class="carea-badge" id="areaBadge">0 м²</span>
+          </div>
+        </div>
+        <div class="cwrap" id="cwrap">
+          <canvas id="cv"></canvas>
+          <div class="snap-dot" id="snapDot"></div>
+          <div class="chint" id="hint">Натисніть і тягніть щоб намалювати стіну • Перетягніть елемент з панелі зліва</div>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result" id="result">
+        <div class="section-title">✅ Результат розрахунку</div>
+        <div class="section-sub" id="resInfo"></div>
+        <div class="stat-grid" id="resStats"></div>
+        <div class="card" id="resVerdict" style="margin-bottom:14px"></div>
+        <div class="res-grid">
+          <div class="card">
+            <div class="ctitle">🗺️ Схема з компонентами</div>
+            <canvas id="rcv" style="width:100%;border-radius:7px;display:block"></canvas>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="card">
+              <div class="ctitle">📦 Компоненти</div>
+              <div id="resList"></div>
+              <div class="total-row">
+                <span class="total-label">Загальна вартість:</span>
+                <span class="total-val" id="resTot">0 грн</span>
+              </div>
+            </div>
+            <button class="btn btn-ok btn-full" onclick="exportResultPDF()">📄 Зберегти PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══ TAB 4 ══ -->
+<div class="page" id="p3">
+  <div class="section-title" style="margin-bottom:4px">📦 База компонентів</div>
+  <div class="section-sub">Сертифіковані засоби захисту та довідник матеріалів</div>
+  <div class="t4grid">
+    <div>
+      <div class="db-top">
+        <div class="search-w"><input class="finput" type="text" id="dbQ" placeholder="Пошук..." oninput="renderDB()"/></div>
+        <div class="chips">
+          <div class="chip on" onclick="setChip(this,'all')">Всі</div>
+          <div class="chip" onclick="setChip(this,'generator')">Генератори</div>
+          <div class="chip" onclick="setChip(this,'vibro')">Вібро</div>
+          <div class="chip" onclick="setChip(this,'combined')">Комбіновані</div>
+        </div>
+      </div>
+      <div class="twrap" style="margin-bottom:14px">
+        <table><thead><tr><th>#</th><th>Назва</th><th>Тип</th><th>Виробник</th><th>№ висновку</th><th>Статус</th><th>Клас</th><th>Покр. м²</th><th>Ефект. дБ</th><th>Ціна грн</th><th>Серт.</th></tr></thead>
+        <tbody id="dbBody"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="ctitle">🧱 Матеріали (звукоізоляція)</div>
+        <div class="twrap"><table><thead><tr><th>Матеріал</th><th>Товщина</th><th>Ізол. дБ</th><th>Норматив</th><th>Застосування</th></tr></thead>
+        <tbody id="matBody"></tbody></table></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card">
+        <div class="ctitle">📥 Імпорт CSV</div>
+        <div class="csv-zone" id="csvZ" ondrop="csvDrop(event)" ondragover="event.preventDefault()" ondragenter="this.classList.add('dov')" ondragleave="this.classList.remove('dov')" onclick="document.getElementById('csvF').click()">
+          <span style="font-size:28px;display:block;margin-bottom:6px">📂</span>
+          <div style="font-size:13px;color:var(--t2)">Перетягніть CSV або натисніть</div>
+          <div style="font-size:11px;color:var(--tm);margin-top:3px">name,type,maker,power,coverage,price,classMin,cert,effectDB</div>
+        </div>
+        <input type="file" id="csvF" accept=".csv" style="display:none" onchange="csvFile(event)"/>
+        <button class="btn btn-se btn-full" style="margin-top:8px;font-size:12px" onclick="dlTemplate()">⬇️ Шаблон CSV</button>
+      </div>
+      <div class="card">
+        <div class="ctitle">📊 Статистика</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--el);border-radius:7px"><span style="font-size:12px;color:var(--t2)">Компонентів</span><span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--ac)" id="stComp">0</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--el);border-radius:7px"><span style="font-size:12px;color:var(--t2)">Сертифікованих</span><span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--ok)" id="stCert">0</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--el);border-radius:7px"><span style="font-size:12px;color:var(--t2)">Матеріалів</span><span style="font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--ac)" id="stMat">0</span></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-se btn-full" style="font-size:12px" onclick="exportJSON()">⬆️ JSON</button>
+          <button class="btn btn-se btn-full" style="font-size:12px" onclick="exportCSV()">⬆️ CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="nf"></div>
+
+
+<!-- Підключення скриптів у порядку залежностей:
+     data (дані) -> engine (розрахунок) -> canvas (малювання) -> ui (інтерфейс) -> app (зв'язок) -->
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
