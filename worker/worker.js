@@ -3,21 +3,25 @@
    Використовується і розрахунковим ядром (engine.js), і інтерфейсом. */
 
 /* ══ STATE ══ */
-// Безпечне читання localStorage: якщо дані пошкоджені — повертаємо порожній масив,
-// щоб застосунок не «вмирав» при збійному збереженні.
+// localStorage існує лише в браузері. На сервері (Cloudflare Worker) його немає —
+// тому всі звернення робимо через безпечну обгортку, щоб той самий data.js
+// працював і у фронті, і в бекенді.
+const hasLS = (typeof localStorage !== 'undefined');
+function lsGet(key){ try{ return hasLS ? localStorage.getItem(key) : null; }catch(e){ return null; } }
+
+// Безпечне читання масиву зі сховища (порожній масив, якщо немає або пошкоджено).
 function loadLS(key){
   try{
-    const raw=localStorage.getItem(key);
+    const raw=lsGet(key);
     if(!raw) return [];
     const v=JSON.parse(raw);
     return Array.isArray(v) ? v : [];
   }catch(e){
-    console.warn('Пошкоджені дані в localStorage ('+key+'), скинуто.');
     return [];
   }
 }
 const S = {
-  theme: localStorage.getItem('kth')||'dark',
+  theme: lsGet('kth')||'dark',
   tool: 'wall',
   format: 'short',
   optCrit: 'price',
@@ -138,7 +142,6 @@ const EL_IS_SOURCE=(t)=>t&&t.startsWith('src-');
    композитна звукоізоляція (ДСТУ Б В.1.1-10), підбір засобів захисту.
    Цей самий файл працює:
      • у браузері (локальний резерв розрахунку),
-     • на Cloudflare Worker (основний бекенд) — див. worker/worker.js.
    Залежить лише від констант з data.js (DB, MAT_AC, W_BANDS, CAT_W ...). */
 
 // ── Метод словесної розбірливості W ──
@@ -391,7 +394,6 @@ function partitionBonus(walls){
 
 // ═══ ГОЛОВНА ФУНКЦІЯ РОЗРАХУНКУ ═══
 // Чиста: на вході — опис приміщення, на виході — готова конфігурація захисту.
-// Саме її викликає і фронтенд (локально), і Cloudflare Worker (бекенд).
 //   input = { walls, elems, cls, roomH }
 //   return = { ok:true, result:{...} }  або  { ok:false, error:'...' }
 function computeConfig(input){
@@ -497,23 +499,7 @@ function computeConfig(input){
 if(typeof module!=='undefined' && module.exports){
   module.exports={computeConfig, calcW, maskNeeded, matR, areaFromWalls, contourClosed};
 }
-/* ═══ БЕКЕНД: Cloudflare Worker ═══
-   Розрахункове ядро КСЗІ як HTTP API. Розгортається безкоштовно на Cloudflare.
-   Фронтенд надсилає опис приміщення -> Worker рахує -> повертає конфігурацію захисту.
-
-   ЯК РОЗГОРНУТИ:
-     1. Зайти на dash.cloudflare.com -> Workers & Pages -> Create Worker.
-     2. Вставити вміст цього файлу (data.js + engine.js + цей код треба склеїти —
-        див. нижче блок "ВМІСТ ЯДРА") або задеплоїти через wrangler:
-          npm i -g wrangler
-          wrangler deploy worker/worker.js
-     3. Отримати URL виду https://kszi.<ваш>.workers.dev
-        і вписати його у фронтенді (js/app.js -> API_URL).
-
-   ВАЖЛИВО: щоб Worker був самодостатнім, у нього треба вкласти вміст
-   data.js та engine.js. Найпростіше — зібрати один файл командою:
-       cat js/data.js js/engine.js worker/worker_handler.js > worker/worker.js
-   (worker_handler.js — це лише блок addEventListener нижче). */
+/* ═══ БЕКЕНД: Cloudflare Worker ═══*/
 
 // ─────────────── HTTP-обробник ───────────────
 const CORS = {
