@@ -3,9 +3,7 @@
    Використовується і розрахунковим ядром (engine.js), і інтерфейсом. */
 
 /* ══ STATE ══ */
-// localStorage існує лише в браузері. На сервері (Cloudflare Worker) його немає —
-// тому всі звернення робимо через безпечну обгортку, щоб той самий data.js
-// працював і у фронті, і в бекенді.
+
 const hasLS = (typeof localStorage !== 'undefined');
 function lsGet(key){ try{ return hasLS ? localStorage.getItem(key) : null; }catch(e){ return null; } }
 
@@ -108,7 +106,7 @@ const EL_ACOUSTIC = {
   pipe:   {R:10, area:0.05, name:'Труба/комунікації'}
 };
 /* ── Критерій захищеності: словесна розбірливість W (метод Покровського–Хорєва) ──
-   5 октавних смуг. Норми W за категоріями об'єкта ТПКО-95. */
+   5 октавних смуг. Норми W за категоріями об'єкта НД ТЗІ 1.6-005-2013. */
 const ROOM_H_DEFAULT = 3.0; // висота приміщення, м (якщо поле порожнє)
 
 // Октавні смуги: середня частота, ваговий коеф. k, частотна корекція ізоляції стіни
@@ -121,7 +119,7 @@ const W_BANDS = [
 ];
 // Рівень формант мовлення по смугах (для інтегрального рівня ~70 дБ — звичайна мова)
 const SPEECH_LEVEL = {250:75, 500:77, 1000:74, 2000:69, 4000:63};
-// Норми словесної розбірливості за категоріями ТПКО-95 (I…IV)
+// Норми словесної розбірливості за категоріями НД ТЗІ 1.6-005-2013 (I…IV)
 const CAT_W = {1:0.10, 2:0.20, 3:0.30, 4:0.40};
 const CAT_NAME = {1:'I (особливої важливості)', 2:'II (цілком таємно)', 3:'III (таємно)', 4:'IV (ІзОД)'};
 
@@ -142,6 +140,7 @@ const EL_IS_SOURCE=(t)=>t&&t.startsWith('src-');
    композитна звукоізоляція (ДСТУ Б В.1.1-10), підбір засобів захисту.
    Цей самий файл працює:
      • у браузері (локальний резерв розрахунку),
+     • на Cloudflare Worker (основний бекенд) — див. worker/worker.js.
    Залежить лише від констант з data.js (DB, MAT_AC, W_BANDS, CAT_W ...). */
 
 // ── Метод словесної розбірливості W ──
@@ -394,6 +393,7 @@ function partitionBonus(walls){
 
 // ═══ ГОЛОВНА ФУНКЦІЯ РОЗРАХУНКУ ═══
 // Чиста: на вході — опис приміщення, на виході — готова конфігурація захисту.
+// Саме її викликає і фронтенд (локально), і Cloudflare Worker (бекенд).
 //   input = { walls, elems, cls, roomH }
 //   return = { ok:true, result:{...} }  або  { ok:false, error:'...' }
 function computeConfig(input){
@@ -499,7 +499,23 @@ function computeConfig(input){
 if(typeof module!=='undefined' && module.exports){
   module.exports={computeConfig, calcW, maskNeeded, matR, areaFromWalls, contourClosed};
 }
-/* ═══ БЕКЕНД: Cloudflare Worker ═══*/
+/* ═══ БЕКЕНД: Cloudflare Worker ═══
+   Розрахункове ядро КСЗІ як HTTP API. Розгортається безкоштовно на Cloudflare.
+   Фронтенд надсилає опис приміщення -> Worker рахує -> повертає конфігурацію захисту.
+
+   ЯК РОЗГОРНУТИ:
+     1. Зайти на dash.cloudflare.com -> Workers & Pages -> Create Worker.
+     2. Вставити вміст цього файлу (data.js + engine.js + цей код треба склеїти —
+        див. нижче блок "ВМІСТ ЯДРА") або задеплоїти через wrangler:
+          npm i -g wrangler
+          wrangler deploy worker/worker.js
+     3. Отримати URL виду https://kszi.<ваш>.workers.dev
+        і вписати його у фронтенді (js/app.js -> API_URL).
+
+   ВАЖЛИВО: щоб Worker був самодостатнім, у нього треба вкласти вміст
+   data.js та engine.js. Найпростіше — зібрати один файл командою:
+       cat js/data.js js/engine.js worker/worker_handler.js > worker/worker.js
+   (worker_handler.js — це лише блок addEventListener нижче). */
 
 // ─────────────── HTTP-обробник ───────────────
 const CORS = {

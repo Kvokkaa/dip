@@ -3,21 +3,23 @@
    Використовується і розрахунковим ядром (engine.js), і інтерфейсом. */
 
 /* ══ STATE ══ */
-// Безпечне читання localStorage: якщо дані пошкоджені — повертаємо порожній масив,
-// щоб застосунок не «вмирав» при збійному збереженні.
+
+const hasLS = (typeof localStorage !== 'undefined');
+function lsGet(key){ try{ return hasLS ? localStorage.getItem(key) : null; }catch(e){ return null; } }
+
+// Безпечне читання масиву зі сховища (порожній масив, якщо немає або пошкоджено).
 function loadLS(key){
   try{
-    const raw=localStorage.getItem(key);
+    const raw=lsGet(key);
     if(!raw) return [];
     const v=JSON.parse(raw);
     return Array.isArray(v) ? v : [];
   }catch(e){
-    console.warn('Пошкоджені дані в localStorage ('+key+'), скинуто.');
     return [];
   }
 }
 const S = {
-  theme: localStorage.getItem('kth')||'dark',
+  theme: lsGet('kth')||'dark',
   tool: 'wall',
   format: 'short',
   optCrit: 'price',
@@ -104,7 +106,7 @@ const EL_ACOUSTIC = {
   pipe:   {R:10, area:0.05, name:'Труба/комунікації'}
 };
 /* ── Критерій захищеності: словесна розбірливість W (метод Покровського–Хорєва) ──
-   5 октавних смуг. Норми W за категоріями об'єкта ТПКО-95. */
+   5 октавних смуг. Норми W за категоріями об'єкта НД ТЗІ 1.6-005-2013. */
 const ROOM_H_DEFAULT = 3.0; // висота приміщення, м (якщо поле порожнє)
 
 // Октавні смуги: середня частота, ваговий коеф. k, частотна корекція ізоляції стіни
@@ -117,7 +119,7 @@ const W_BANDS = [
 ];
 // Рівень формант мовлення по смугах (для інтегрального рівня ~70 дБ — звичайна мова)
 const SPEECH_LEVEL = {250:75, 500:77, 1000:74, 2000:69, 4000:63};
-// Норми словесної розбірливості за категоріями ТПКО-95 (I…IV)
+// Норми словесної розбірливості за категоріями НД ТЗІ 1.6-005-2013 (I…IV)
 const CAT_W = {1:0.10, 2:0.20, 3:0.30, 4:0.40};
 const CAT_NAME = {1:'I (особливої важливості)', 2:'II (цілком таємно)', 3:'III (таємно)', 4:'IV (ІзОД)'};
 

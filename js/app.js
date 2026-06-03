@@ -37,7 +37,6 @@ function setTheme(t,s){
 
 /* ═══ ЗВ'ЯЗОК З РОЗРАХУНКОВИМ ЯДРОМ ═══ */
 
-
 const API_URL = 'http://kszi.khomyachella.workers.dev/';
 
 // Тонкий generate(): збирає дані форми -> ядро (бекенд або локально) -> вивід.
